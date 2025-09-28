@@ -37,31 +37,36 @@ export default class Game {
     return this.status;
   }
 
+  slideAndCombineRow(inputRow) {
+    let newRow = inputRow.filter((n) => n !== 0); // копія для редагування
+
+    for (let i = 0; i < newRow.length - 1; i++) {
+      if (newRow[i] === newRow[i + 1]) {
+        newRow[i] *= 2;
+        this.score += newRow[i];
+        newRow[i + 1] = 0;
+      }
+    }
+
+    newRow = newRow.filter((n) => n !== 0);
+
+    while (newRow.length < this.size) {
+      newRow.push(0);
+    }
+
+    return newRow;
+  }
+
   moveLeft() {
     let moved = false;
 
-    for (let r = 0; r < this.size; r++) {
-      let row = this.board[r].filter((n) => n !== 0);
+    for (let row = 0; row < this.size; row++) {
+      const newRow = this.slideAndCombineRow(this.board[row]);
 
-      for (let i = 0; i < row.length - 1; i++) {
-        if (row[i] === row[i + 1]) {
-          row[i] *= 2;
-          this.score += row[i];
-          row[i + 1] = 0;
-        }
-      }
-
-      row = row.filter((n) => n !== 0);
-
-      while (row.length < this.size) {
-        row.push(0);
-      }
-
-      if (!moved && row.some((val, idx) => val !== this.board[r][idx])) {
+      if (!moved && newRow.some((val, idx) => val !== this.board[row][idx])) {
         moved = true;
       }
-
-      this.board[r] = row;
+      this.board[row] = newRow;
     }
 
     if (moved) {
@@ -71,9 +76,23 @@ export default class Game {
   }
 
   moveRight() {
-    this.board = this.board.map((row) => row.reverse());
-    this.moveLeft();
-    this.board = this.board.map((row) => row.reverse());
+    let moved = false;
+
+    for (let row = 0; row < this.size; row++) {
+      const newRow = this.slideAndCombineRow(
+        this.board[row].slice().reverse(),
+      ).reverse();
+
+      if (!moved && newRow.some((val, idx) => val !== this.board[row][idx])) {
+        moved = true;
+      }
+      this.board[row] = newRow;
+    }
+
+    if (moved) {
+      this.addRandomTile();
+    }
+    this.checkStatus();
   }
 
   moveUp() {
@@ -107,10 +126,10 @@ export default class Game {
   addRandomTile() {
     const empty = [];
 
-    for (let rIndex = 0; rIndex < this.size; rIndex++) {
-      for (let cIndex = 0; cIndex < this.size; cIndex++) {
-        if (this.board[rIndex][cIndex] === 0) {
-          empty.push({ r: rIndex, c: cIndex });
+    for (let rowIdx = 0; rowIdx < this.size; rowIdx++) {
+      for (let colIdx = 0; colIdx < this.size; colIdx++) {
+        if (this.board[rowIdx][colIdx] === 0) {
+          empty.push({ r: rowIdx, c: colIdx });
         }
       }
     }
@@ -125,22 +144,22 @@ export default class Game {
   }
 
   canMove() {
-    for (let rIndex = 0; rIndex < this.size; rIndex++) {
-      for (let cIndex = 0; cIndex < this.size; cIndex++) {
-        if (this.board[rIndex][cIndex] === 0) {
+    for (let rowIdx = 0; rowIdx < this.size; rowIdx++) {
+      for (let colIdx = 0; colIdx < this.size; colIdx++) {
+        if (this.board[rowIdx][colIdx] === 0) {
           return true;
         }
 
         if (
-          cIndex < this.size - 1 &&
-          this.board[rIndex][cIndex] === this.board[rIndex][cIndex + 1]
+          colIdx < this.size - 1 &&
+          this.board[rowIdx][colIdx] === this.board[rowIdx][colIdx + 1]
         ) {
           return true;
         }
 
         if (
-          rIndex < this.size - 1 &&
-          this.board[rIndex][cIndex] === this.board[rIndex + 1][cIndex]
+          rowIdx < this.size - 1 &&
+          this.board[rowIdx][colIdx] === this.board[rowIdx + 1][colIdx]
         ) {
           return true;
         }

@@ -27,11 +27,26 @@ function render() {
   messageStart.classList.toggle('hidden', game.getStatus() !== 'idle');
   messageWin.classList.toggle('hidden', game.getStatus() !== 'win');
   messageLose.classList.toggle('hidden', game.getStatus() !== 'lose');
-  startBtn.textContent = game.getStatus() === 'playing' ? 'Restart' : 'Start';
+
+  // зміна тексту і класу кнопки
+  if (game.getStatus() === 'idle') {
+    startBtn.textContent = 'Start';
+    startBtn.classList.add('start');
+    startBtn.classList.remove('restart');
+  } else {
+    startBtn.textContent = 'Restart';
+    startBtn.classList.remove('start');
+    startBtn.classList.add('restart');
+  }
 }
 
+// клік по кнопці
 startBtn.addEventListener('click', () => {
-  game.restart();
+  if (game.getStatus() === 'idle') {
+    game.start();
+  } else {
+    game.restart();
+  }
   render();
 });
 
